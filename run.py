@@ -32,6 +32,7 @@ def choose_file_and_read_df():
 
     combined_df = pd.DataFrame()
 
+
     with pdfplumber.open(pdf_path) as pdf:
         page = pdf.pages[0]
         table = page.extract_tables()
@@ -45,7 +46,7 @@ def choose_file_and_read_df():
             table = page.extract_tables()
             if i == 0:
                 df = pd.DataFrame(table[0][1:], columns=columns_a)
-                df.to_excel(f'exchange/df_{i}.xlsx')
+                # df.to_excel(f'exchange/df_{i}.xlsx')
             else:
                 table_i=table[0]
                 columns = ['None']+columns_a+['None']
@@ -58,6 +59,7 @@ def choose_file_and_read_df():
             combined_df = pd.concat([combined_df, df], ignore_index=True)
         combined_df['№'] = pd.to_numeric(combined_df['№'], errors='coerce').astype('int64')  # Преобразуем в целые числа
         combined_df['Артикул'] = combined_df['Артикул'].str.replace('\n', '') # Удаляем переносы из артикулов
+        combined_df['Номенклатура'] = combined_df['Номенклатура'].str.replace('\n', ' ') # Удаляем переносы из Номенклатура
         combined_df['Скидка по спеццене'] = pd.to_numeric(combined_df['Скидка по спеццене'], errors='coerce').astype('int64')  # Преобразуем в целые числа
         combined_df['Количество в заказе'] = combined_df['Количество в заказе'].str.replace(' ', '') # Удаляем пробелы из числовых данных
         combined_df['Количество в заказе'] = pd.to_numeric(combined_df['Количество в заказе'], errors='coerce').astype('int64')  # Преобразуем в целые числа
