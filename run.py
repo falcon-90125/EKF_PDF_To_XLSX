@@ -24,20 +24,14 @@ def choose_price_and_read_df():
 
 def choose_file_and_read_df():
     global price_path
-    
-    # Меняем текст кнопки
-    button2.config(text="Информационное письмо обрабатывается")
-
     pdf_path = filedialog.askopenfilename(filetypes=[("PDF", "*.pdf")])
 
-
-# pdf_path = 'exchange/input.pdf'
-# price_path = 'exchange/ekf_pricelist_2025-02-27.xlsx'
+# pdf_path = 'input.pdf'
+# price_path = 'ekf_pricelist_2025-02-27.xlsx'
 
     combined_df = pd.DataFrame()
 
-
-    with pdfplumber.open(pdf_path) as pdf:
+    with pdfplumber.open(pdf_path) as pdf:    
         page = pdf.pages[0]
         table = page.extract_tables()
         columns_a=table[0][0]
@@ -67,17 +61,13 @@ def choose_file_and_read_df():
         combined_df['Скидка по спеццене'] = pd.to_numeric(combined_df['Скидка по спеццене'], errors='coerce').astype('int64')  # Преобразуем в целые числа
         combined_df['Количество в заказе'] = combined_df['Количество в заказе'].str.replace(' ', '') # Удаляем пробелы из числовых данных
         combined_df['Количество в заказе'] = pd.to_numeric(combined_df['Количество в заказе'], errors='coerce').astype('int64')  # Преобразуем в целые числа
-            # pass
 
-        # combined_df.to_excel(f'exchange/combined_df.xlsx', index=False)
-
-
-        price_df = pd.read_excel('ekf_pricelist_2025-02-27.xlsx')
+        price_df = pd.read_excel(price_path)
         price_df = price_df.drop(range(10))  # Удаляем строки с индексами от 0 до 9
         # Заменяем заголовок на первую строку
         price_df.columns = price_df.iloc[0]  # Делаем первую строку заголовком
         price_df = price_df[1:].reset_index(drop=True)  # Удаляем первую строку и сбрасываем индексы
-        # Выбираем только столбец 'Age' из df2
+        # Выбираем только столбцы 'Артикул' и 'Базовая цена' из price_df
         df_art_base_price = price_df[['Артикул', 'Базовая цена,                   с НДС']]
         df_art_base_price.rename(columns={'Базовая цена,                   с НДС': 'Базовая цена, с НДС'}, inplace=True)
 
@@ -88,12 +78,10 @@ def choose_file_and_read_df():
         sum_base_price = round(combined_df['Сумма БЦ, с НДС'].sum(), 2)
         sum_sale_price = round(combined_df['Сумма со скидкой'].sum(), 2)
 
-        # columns = combined_df.columns
         df_sums_line = [['', '', '', '', '', 'ИТОГО:', sum_base_price, '', sum_sale_price]]
         df_sums = pd.DataFrame(df_sums_line, columns = combined_df.columns)
         combined_df = pd.concat([combined_df, df_sums], ignore_index=True)
 
-    # Создаем временный файл
     with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp_file:
         temp_filename = 'commercial_offer_EKF.xlsx' #tmp_file.name  # Получаем имя временного файла
         # Используем pd.ExcelWriter для настройки форматов и ширины столбцов
@@ -126,14 +114,13 @@ def choose_file_and_read_df():
             worksheet.set_column('H:H', 18, format2)  # Ширина и формат для Цена со скидкой
             worksheet.set_column('I:I', 18, format3)  # Ширина и формат для Сумма со скидкой
 
-        # # Создаём формат для ячейки с "Итого" в последней строке
+            # Создаём формат для ячейки с "Итого" в последней строке
             worksheet.write(combined_df.shape[0], 5, combined_df.iloc[-1, 5], format4)
 
         # Закрашиваем пустые ячейки (ненайденные цены по артикулу) в жёлтый цвет
         # Открываем файл с помощью openpyxl
         wb = load_workbook(temp_filename)
         ws = wb.active
-
         # Применяем стили к пустым ячейкам, исключая последнюю строку
         for row in range(1, ws.max_row):
             for col in range(1, ws.max_column + 1):
