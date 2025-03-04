@@ -14,11 +14,10 @@ if os.environ.get('DISPLAY', '') == '':
     print('No display found. Using :0.0')
     os.environ['DISPLAY'] = ':0.0'
 
-
 def choose_price_and_read_df():
     global price_path
     price_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx;*.xls")])
-    
+
     # Меняем текст кнопки
     button1.config(text="Прайс-лист выбран")
 
