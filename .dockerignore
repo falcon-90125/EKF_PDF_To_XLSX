@@ -1,0 +1,6 @@
+*.cmd
+*.pdf
+*.xlsx
+*.jpg
+*.sh
+.gitignore

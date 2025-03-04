@@ -10,6 +10,10 @@ from openpyxl.styles import PatternFill
 import tkinter as tk
 from tkinter import filedialog
 
+if os.environ.get('DISPLAY', '') == '':
+    print('No display found. Using :0.0')
+    os.environ['DISPLAY'] = ':0.0'
+
 
 def choose_price_and_read_df():
     global price_path
@@ -27,7 +31,7 @@ def choose_file_and_read_df():
     pdf_path = filedialog.askopenfilename(filetypes=[("PDF", "*.pdf")])
 
 
-# pdf_path = 'exchange/input4.pdf'
+# pdf_path = 'exchange/input.pdf'
 # price_path = 'exchange/ekf_pricelist_2025-02-27.xlsx'
 
     combined_df = pd.DataFrame()
@@ -68,7 +72,7 @@ def choose_file_and_read_df():
         # combined_df.to_excel(f'exchange/combined_df.xlsx', index=False)
 
 
-        price_df = pd.read_excel(price_path)
+        price_df = pd.read_excel('ekf_pricelist_2025-02-27.xlsx')
         price_df = price_df.drop(range(10))  # Удаляем строки с индексами от 0 до 9
         # Заменяем заголовок на первую строку
         price_df.columns = price_df.iloc[0]  # Делаем первую строку заголовком
